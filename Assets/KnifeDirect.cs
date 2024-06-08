@@ -3,81 +3,61 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Knife : MonoBehaviour
+public class KnifeDirect: MonoBehaviour
 {
 
     SpriteRenderer mesh;
-    public Vector2 movement;
+    private Vector2 movement;
     Rigidbody2D rigidbody2d;
     AudioSource audioSource;
-    /// <summary>
-    /// 召喚時の音
-    /// </summary>
     public AudioClip spawn;
-    /// <summary>
-    /// 飛んでく時の音
-    /// </summary>
     public AudioClip fly;
-    /// <summary>
-    /// ナイフが飛んでく角度
-    /// </summary>
-    private int rote;
-    float rotation;
-    /// <summary>
-    /// ナイフの加速度
-    /// </summary>
-    float magnification;
-    float m_waitTime;
+    public string flyDirection;
+    public float magnification;
+    public int rote;
 
-
-    /// <summary>
-    /// ベクトルから角度を取得する。
-    /// </summary>
-    /// <param name="angle"></param>
-    /// <returns></returns>
-    public static Vector2 AngleToVector2(float angle)
-    {
-        var radian = angle * (Mathf.PI / 180);
-        return new Vector2(Mathf.Cos(radian), Mathf.Sin(radian)).normalized;
-    }
 
     // Start is called before the first frame update
     void Start()
     {
-        GameObject spawner = GameObject.Find("SpawnArea");
-        KnifeSpawn knife = spawner.GetComponent<KnifeSpawn>();
-        rote = knife.rote;
-        magnification = 20;
+        //movement = new Vector2 ();
         transform.rotation = Quaternion.Euler(0, 0, rote);
         audioSource = GetComponent<AudioSource>();
         mesh = GetComponent<SpriteRenderer>();
         rigidbody2d = this.GetComponent<Rigidbody2D>();
         StartCoroutine("Transparent");
-        mesh.material.color -= new Color32(0, 0, 0, 255);
+        mesh.material.color -= new Color32(0,0,0,255);
         rigidbody2d.rotation -= 180;
+        if (flyDirection == "right") 
+        {
+            movement = new Vector2(1,0);
+        }
+        if (flyDirection == "left")
+        {
+            movement = new Vector2(-1, 0);
+        }
+        if (flyDirection == "up")
+        {
+            movement = new Vector2(0, 1);
+        }
+        if (flyDirection == "down")
+        {
+            movement = new Vector2(0, -1);
+        }
         Invoke("Destroy", 8);
     }
 
-    IEnumerator Transparent()　//ここで召喚の挙動。ベクトルも取得している。
+    IEnumerator Transparent()
     {
-
+        
         audioSource.PlayOneShot(spawn);
         for (int i = 0; i < 30; i++)
         {
             mesh.material.color = mesh.material.color + new Color32(0, 0, 0, 9);
             rigidbody2d.rotation += 6;
             yield return new WaitForSeconds(0.01f);
-
+            
         }
-        yield return new WaitForSeconds(0.1f);
-        rotation = transform.localEulerAngles.z;
-
-        movement = AngleToVector2(rotation);
-        
-        
-
-        //c = 1; //ここで飛んでいく挙動が開始されるようになっている。
-
         audioSource.PlayOneShot(fly);
 
         for (int i = 0; i < 50; i++)
@@ -85,7 +65,6 @@ public class Knife : MonoBehaviour
             rigidbody2d.AddForce(movement * new Vector2(magnification, magnification)); //ForceMode2D.Impulse
             yield return new WaitForSeconds(0.01f);
         }
-
     }
 
 
@@ -96,11 +75,14 @@ public class Knife : MonoBehaviour
     }
     private void FixedUpdate()
     {
-
+        
+        
     }
 
+    //消滅時エフェクト
     public void Destroy()
     {
         Destroy(gameObject);
     }
+
 }
